@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 
 const app = express();
 app.use(express.json()); // Middleware für JSON-Daten
-const PORT = process.env.PORT || 3000;  // ❗PORT muss VOR app.listen stehen!
+
+const PORT = process.env.PORT || 3000;  // ❗PORT darf nur einmal definiert sein!
 
 mongoose.connect('mongodb://mongodb:27017/palettenDB', {
     useNewUrlParser: true,
@@ -30,14 +31,10 @@ app.get('/api/palettes', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
-
+// Standard-Route
 app.get('/', (req, res) => {
     res.send('Palettenverwaltung API ist aktiv!');
 });
 
-// Starte den Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
-});
+// Starte den Server (NUR EINMAL)
+app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
