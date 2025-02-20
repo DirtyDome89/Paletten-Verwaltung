@@ -1,4 +1,3 @@
-code models/Palette.js
 const mongoose = require('mongoose');
 
 const paletteSchema = new mongoose.Schema({

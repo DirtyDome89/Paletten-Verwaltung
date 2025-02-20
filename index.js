@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Palette = require('./models/Palette');
+
 
 const app = express();
 app.use(express.json()); // Middleware für JSON-Daten
