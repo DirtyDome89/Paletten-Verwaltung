@@ -1,5 +1,6 @@
-const express = require('express');
-const mongoose = require('mongoose');
+import express from 'express';
+import mongoose from 'mongoose';
+
 const app = express();
 app.use(express.json());  // Middleware für JSON-Daten
 
@@ -23,7 +24,12 @@ const paletteSchema = new mongoose.Schema({
 });
 
 // Überprüfe, ob das Modell bereits existiert, um doppelte Deklarationen zu vermeiden.
-const Palette = mongoose.models.Palette || mongoose.model('Palette', paletteSchema);
+let Palette;
+try {
+  Palette = mongoose.model('Palette');
+} catch (error) {
+  Palette = mongoose.model('Palette', paletteSchema);  // Modell erstellen, wenn es noch nicht existiert
+}
 
 // API-Endpunkt für alle Paletten
 app.get('/api/palettes', async (req, res) => {
