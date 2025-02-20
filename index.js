@@ -1,57 +1,70 @@
+// index.js
+
+// Importiere benötigte Pakete
 const express = require('express');
 const mongoose = require('mongoose');
-
 const app = express();
-app.use(express.json()); // Middleware für JSON-Daten
 
-const PORT = process.env.PORT || 3000;
+// Importiere das Palette-Modell
+const Palette = require('./models/palette');
 
-// 📌 MongoDB Verbindung
+// Middleware für JSON-Daten
+app.use(express.json());
+
+// MongoDB-Verbindung
 mongoose.connect('mongodb://mongodb:27017/palettenDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => console.log("✅ MongoDB verbunden"))
-  .catch(err => console.log("❌ Fehler bei MongoDB:", err));
+}).then(() => console.log("MongoDB verbunden"))
+  .catch(err => console.log(err));
 
-// 📌 Mongoose Schema für Paletten
-const paletteSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    type: { type: String, required: true },
-    quantity: { type: Number, required: true, min: -9999 },
-    location: { type: String, required: true },
-    supplier: { type: String, required: false },
-    carrier: { type: String, required: false },
-    quality: { type: String, required: false },
-    createdAt: { type: Date, default: Date.now }
+// API-Endpunkt zum Erstellen einer neuen Palette
+app.post('/api/palettes', async (req, res) => {
+    const { name, type, quantity, location } = req.body;
+    try {
+        // Neue Palette erstellen
+        const newPalette = new Palette({ name, type, quantity, location });
+        await newPalette.save();
+        // Erfolg: Rückgabe der neuen Palette
+        res.status(201).json(newPalette);
+    } catch (err) {
+        // Fehler: Rückgabe der Fehlermeldung
+        res.status(400).json({ message: err.message });
+    }
 });
 
-const Palette = mongoose.model('Palette', paletteSchema);
-
-// ➤ ✅ Alle Paletten abrufen
+// API-Endpunkt zum Abrufen aller Paletten
 app.get('/api/palettes', async (req, res) => {
     try {
+        // Alle Paletten aus der Datenbank abrufen
         const palettes = await Palette.find();
         res.json(palettes);
     } catch (err) {
-        res.status(500).json({ message: "❌ Fehler beim Abrufen der Paletten", error: err.message });
+        // Fehler: Rückgabe der Fehlermeldung
+        res.status(500).json({ message: err.message });
     }
 });
 
-// ➤ ✅ Neue Palette hinzufügen (POST)
-app.post('/api/palettes', async (req, res) => {
+// API-Endpunkt zum Abrufen von Paletten mit Paginierung, Sortierung und Suche
+app.get('/api/palettes', async (req, res) => {
+    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'asc', search = '' } = req.query;
     try {
-        const newPalette = new Palette(req.body);
-        const savedPalette = await newPalette.save();
-        res.status(201).json(savedPalette);
+        const palettes = await Palette.find({
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { location: { $regex: search, $options: 'i' } }
+            ]
+        })
+        .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+        res.json(palettes);
     } catch (err) {
-        res.status(400).json({ message: "❌ Fehler beim Erstellen der Palette", error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// ➤ ✅ Standard-Route
-app.get('/', (req, res) => {
-    res.send('✅ Palettenverwaltung API ist aktiv!');
-});
-
-// ➤ Server starten
-app.listen(PORT, () => console.log(`✅ Server läuft auf Port ${PORT}`));
+// Server starten
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
