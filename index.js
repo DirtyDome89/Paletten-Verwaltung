@@ -15,8 +15,9 @@ app.use(express.json());
 mongoose.connect('mongodb://mongodb:27017/palettenDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => console.log("MongoDB verbunden"))
-  .catch(err => console.log(err));
+})
+    .then(() => console.log("MongoDB verbunden"))
+    .catch(err => console.log(err));  
 
 // API-Endpunkt zum Erstellen einer neuen Palette
 app.post('/api/palettes', async (req, res) => {
