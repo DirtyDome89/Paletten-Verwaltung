@@ -31,3 +31,15 @@ app.get('/api/palettes', async (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+    res.send('Palettenverwaltung API ist aktiv!');
+});
+
+// Starte den Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server läuft auf Port ${PORT}`);
+});
