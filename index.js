@@ -1,7 +1,9 @@
+// index.js
+
 import express from 'express';
 import mongoose from 'mongoose';
 import { body, validationResult } from 'express-validator';
-import Palette from './models/palette.js';
+import Palette from './models/palette.js'; // Hier wird das Modell importiert
 
 const app = express();
 app.use(express.json()); // Middleware für JSON-Daten
@@ -19,7 +21,7 @@ app.post('/api/palettes', [
   // Validierung der Eingabefelder
   body('name').isLength({ min: 3 }).withMessage('Name muss mindestens 3 Zeichen lang sein'),
   body('type').isIn(['EUR', 'USD']).withMessage('Ungültiger Typ'),
-  body('quantity').isInt({ gt: 0 }).withMessage('Quantity muss eine positive Zahl sein'),
+  body('quantity').isInt().withMessage('Quantity muss eine Zahl sein'),
   body('location').not().isEmpty().withMessage('Location darf nicht leer sein')
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -28,6 +30,12 @@ app.post('/api/palettes', [
   }
 
   const { name, type, quantity, location } = req.body;
+
+  // Logik, um negative Mengen zu erlauben, z.B. für Ausgleichsbuchungen
+  if (quantity < 0) {
+    console.log(`Negative Menge akzeptiert: ${quantity}`);
+  }
+
   try {
     const newPalette = new Palette({ name, type, quantity, location });
     await newPalette.save();

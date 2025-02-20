@@ -1,16 +1,29 @@
-const mongoose = require('mongoose');
+// models/palette.js
 
-// Definiere das Schema für Paletten
+import mongoose from 'mongoose';
+
 const paletteSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    type: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    location: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
+  name: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['EUR', 'USD'],
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true // Erstellt automatisch `createdAt` und `updatedAt` Felder
 });
 
-// Erstelle das Modell für Paletten basierend auf dem Schema
+// Das Palette-Modell exportieren
 const Palette = mongoose.model('Palette', paletteSchema);
-
-// Exportiere das Modell, damit es in anderen Dateien verwendet werden kann
-module.exports = Palette;
+export default Palette;
