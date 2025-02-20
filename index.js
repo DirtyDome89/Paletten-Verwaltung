@@ -1,9 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { Palette } = require('./models/palette');  // Importiere das Palette-Modell
-
 const app = express();
-app.use(express.json()); // Middleware für JSON-Daten
+app.use(express.json());  // Middleware für JSON-Daten
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,7 +13,7 @@ mongoose.connect('mongodb://mongodb:27017/palettenDB', {
   .then(() => console.log("MongoDB verbunden"))
   .catch(err => console.log(err));
 
-// Beispiel Schema und Model für Paletten
+// Palette-Schema und Modell nur einmal definieren
 const paletteSchema = new mongoose.Schema({
   name: String,
   type: String,
@@ -24,19 +22,13 @@ const paletteSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const Palette = mongoose.model('Palette', paletteSchema);
+// Überprüfe, ob das Modell bereits existiert, um doppelte Deklarationen zu vermeiden.
+const Palette = mongoose.models.Palette || mongoose.model('Palette', paletteSchema);
 
 // API-Endpunkt für alle Paletten
 app.get('/api/palettes', async (req, res) => {
   try {
-    const { page = 1, limit = 5, sortBy = 'createdAt', order = 'asc', search = '' } = req.query;
-    const sortOrder = order === 'asc' ? 1 : -1;
-
-    const palettes = await Palette.find({ name: new RegExp(search, 'i') })
-      .sort({ [sortBy]: sortOrder })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
+    const palettes = await Palette.find();
     res.json(palettes);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -102,28 +94,7 @@ app.delete('/api/palettes/:id', async (req, res) => {
   }
 });
 
-// Filter-Endpunkt (nach Location und Datum)
-app.get('/api/palettes/filter', async (req, res) => {
-  const { location, startDate, endDate } = req.query;
-
-  let filter = {};
-  if (location) filter.location = location;
-  if (startDate && endDate) {
-    filter.createdAt = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
-  }
-
-  try {
-    const palettes = await Palette.find(filter);
-    res.json(palettes);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Starten des Servers
+// Starte den Server
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
