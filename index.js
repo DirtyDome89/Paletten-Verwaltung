@@ -1,71 +1,129 @@
-// index.js
+import express from 'express';
+import mongoose from 'mongoose';
+import { Palette } from './models/palette.js';  // Importiere das Palette-Modell
 
-// Importiere benötigte Pakete
-const express = require('express');
-const mongoose = require('mongoose');
 const app = express();
+app.use(express.json()); // Middleware für JSON-Daten
 
-// Importiere das Palette-Modell
-const Palette = require('./models/palette');
+const PORT = process.env.PORT || 3000;
 
-// Middleware für JSON-Daten
-app.use(express.json());
-
-// MongoDB-Verbindung
+// MongoDB-Verbindung herstellen
 mongoose.connect('mongodb://mongodb:27017/palettenDB', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
-    .then(() => console.log("MongoDB verbunden"))
-    .catch(err => console.log(err));  
+  .then(() => console.log("MongoDB verbunden"))
+  .catch(err => console.log(err));
+
+// Beispiel Schema und Model für Paletten
+const paletteSchema = new mongoose.Schema({
+  name: String,
+  type: String,
+  quantity: Number,
+  location: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Palette = mongoose.model('Palette', paletteSchema);
+
+// API-Endpunkt für alle Paletten
+app.get('/api/palettes', async (req, res) => {
+  try {
+    const { page = 1, limit = 5, sortBy = 'createdAt', order = 'asc', search = '' } = req.query;
+    const sortOrder = order === 'asc' ? 1 : -1;
+
+    const palettes = await Palette.find({ name: new RegExp(search, 'i') })
+      .sort({ [sortBy]: sortOrder })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.json(palettes);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // API-Endpunkt zum Erstellen einer neuen Palette
 app.post('/api/palettes', async (req, res) => {
-    const { name, type, quantity, location } = req.body;
-    try {
-        // Neue Palette erstellen
-        const newPalette = new Palette({ name, type, quantity, location });
-        await newPalette.save();
-        // Erfolg: Rückgabe der neuen Palette
-        res.status(201).json(newPalette);
-    } catch (err) {
-        // Fehler: Rückgabe der Fehlermeldung
-        res.status(400).json({ message: err.message });
-    }
+  const { name, type, quantity, location } = req.body;
+
+  const newPalette = new Palette({
+    name,
+    type,
+    quantity,
+    location,
+  });
+
+  try {
+    const savedPalette = await newPalette.save();
+    res.status(201).json(savedPalette);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
-// API-Endpunkt zum Abrufen aller Paletten
-app.get('/api/palettes', async (req, res) => {
-    try {
-        // Alle Paletten aus der Datenbank abrufen
-        const palettes = await Palette.find();
-        res.json(palettes);
-    } catch (err) {
-        // Fehler: Rückgabe der Fehlermeldung
-        res.status(500).json({ message: err.message });
+// API-Endpunkt zum Aktualisieren einer Palette (PUT)
+app.put('/api/palettes/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, type, quantity, location } = req.body;
+
+  try {
+    const updatedPalette = await Palette.findByIdAndUpdate(id, {
+      name,
+      type,
+      quantity,
+      location,
+    }, { new: true });
+
+    if (!updatedPalette) {
+      return res.status(404).json({ message: "Palette nicht gefunden" });
     }
+
+    res.json(updatedPalette);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// API-Endpunkt zum Abrufen von Paletten mit Paginierung, Sortierung und Suche
-app.get('/api/palettes', async (req, res) => {
-    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'asc', search = '' } = req.query;
-    try {
-        const palettes = await Palette.find({
-            $or: [
-                { name: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } }
-            ]
-        })
-        .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
+// API-Endpunkt zum Löschen einer Palette (DELETE)
+app.delete('/api/palettes/:id', async (req, res) => {
+  const { id } = req.params;
 
-        res.json(palettes);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+  try {
+    const deletedPalette = await Palette.findByIdAndDelete(id);
+
+    if (!deletedPalette) {
+      return res.status(404).json({ message: "Palette nicht gefunden" });
     }
+
+    res.json({ message: "Palette erfolgreich gelöscht" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// Server starten
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
+// Filter-Endpunkt (nach Location und Datum)
+app.get('/api/palettes/filter', async (req, res) => {
+  const { location, startDate, endDate } = req.query;
+
+  let filter = {};
+  if (location) filter.location = location;
+  if (startDate && endDate) {
+    filter.createdAt = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    };
+  }
+
+  try {
+    const palettes = await Palette.find(filter);
+    res.json(palettes);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Starten des Servers
+app.listen(PORT, () => {
+  console.log(`Server läuft auf Port ${PORT}`);
+});
