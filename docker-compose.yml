@@ -2,7 +2,10 @@ services:
   backend:
     build: .
     ports:
-      - "3000:3000"  # Vorher war hier 3001:3000
+      - "3001:3000"  # Ändere zu 3000:3000 falls du direkt 3000 nutzen willst
+    environment:
+      - PORT=3000
+
 
     depends_on:
       - mongodb
