@@ -1,6 +1,6 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import { Palette } from './models/palette.js';  // Importiere das Palette-Modell
+const express = require('express');
+const mongoose = require('mongoose');
+const { Palette } = require('./models/palette');  // Importiere das Palette-Modell
 
 const app = express();
 app.use(express.json()); // Middleware für JSON-Daten
