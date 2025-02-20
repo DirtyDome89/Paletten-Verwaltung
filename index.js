@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const app = express();
 app.use(express.json()); // Middleware für JSON-Daten
+const PORT = process.env.PORT || 3000;  // ❗PORT muss VOR app.listen stehen!
 
 mongoose.connect('mongodb://mongodb:27017/palettenDB', {
     useNewUrlParser: true,
