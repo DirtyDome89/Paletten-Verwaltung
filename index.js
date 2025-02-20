@@ -3,7 +3,9 @@ const app = express();
 const PORT = 3000;
 
 app.get('/', (req, res) => {
-  res.send('Hallo Paletten-Welt!');
+  res.send('Palettenverwaltung ist aktiv!');
+
+');
 });
 
 app.listen(PORT, () => {
