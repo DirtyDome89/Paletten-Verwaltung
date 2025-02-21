@@ -5,7 +5,9 @@ const Dashboard = () => {
   const [palettes, setPalettes] = useState([]);
 
   useEffect(() => {
-    getPalettes().then(setPalettes);
+    getPalettes()
+      .then(setPalettes)
+      .catch((error) => console.error("Fehler beim Laden der Paletten:", error));
   }, []);
 
   return (
@@ -14,13 +16,26 @@ const Dashboard = () => {
       {palettes.length === 0 ? (
         <p>Keine Paletten gefunden.</p>
       ) : (
-        <ul className="space-y-2">
-          {palettes.map(palette => (
-            <li key={palette._id} className="p-2 border rounded shadow-sm">
-              <strong>{palette.name}</strong> – {palette.quantity} Stück
-            </li>
-          ))}
-        </ul>
+        <table className="min-w-full bg-white border border-gray-200 shadow-sm">
+          <thead>
+            <tr className="bg-gray-100 border-b">
+              <th className="py-2 px-4 border-r">Name</th>
+              <th className="py-2 px-4 border-r">Typ</th>
+              <th className="py-2 px-4 border-r">Menge</th>
+              <th className="py-2 px-4">Standort</th>
+            </tr>
+          </thead>
+          <tbody>
+            {palettes.map((palette) => (
+              <tr key={palette._id} className="border-b">
+                <td className="py-2 px-4 border-r">{palette.name}</td>
+                <td className="py-2 px-4 border-r">{palette.type}</td>
+                <td className="py-2 px-4 border-r">{palette.quantity}</td>
+                <td className="py-2 px-4">{palette.location}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
