@@ -1,17 +1,19 @@
-// src/App.jsx
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 
 const App = () => {
   return (
     <Router>
-      <nav className="bg-gray-100 p-4">
-        <Link to="/" className="mr-4 text-blue-600">Dashboard</Link>
-        {/* Hier kannst du weitere Links hinzufügen */}
+      {/* Navigation */}
+      <nav className="bg-gray-800 p-4 text-white">
+        <Link to="/" className="mr-4 hover:text-gray-300">Dashboard</Link>
+        <Link to="/settings" className="hover:text-gray-300">Einstellungen</Link>
       </nav>
+
+      {/* Seiten */}
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        {/* Weitere Routen kannst du hier einfügen */}
+        <Route path="/settings" element={<h1 className="p-8 text-2xl font-bold">Einstellungen</h1>} />
       </Routes>
     </Router>
   );
