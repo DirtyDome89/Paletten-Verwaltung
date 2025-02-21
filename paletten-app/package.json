@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:css": "tailwindcss build src/styles.css -o dist/styles.css"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -28,7 +29,4 @@
     "tailwindcss": "^4.0.8",
     "vite": "^6.1.0"
   }
-  "scripts": {
-  "build:css": "tailwindcss build src/styles.css -o dist/styles.css"
-}
 }
