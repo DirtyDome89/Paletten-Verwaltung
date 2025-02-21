@@ -1,3 +1,5 @@
+import forms from '@tailwindcss/forms';
+
 export default {
   content: [
     "./index.html",
@@ -6,5 +8,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [forms], // Hier wird das Forms-Plugin hinzugefügt
 };
