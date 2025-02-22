@@ -1,23 +1,26 @@
 services:
-  backend:
-    build: .
-    ports:
-      - "3000:3000"   # ❗ Muss auf 3000:3000 gesetzt sein!
-
-    environment:
-      - PORT=3000
-      - MONGO_URL=mongodb://mongodb:27017/paletten
-
-    depends_on:
-      - mongodb
-
   mongodb:
-    image: mongo:latest
+    image: mongo:6-jammy
     container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - backend-network
+
+  backend:
+    build: .
+    container_name: paletten-backend
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/deineDB
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
 
 volumes:
   mongodb_data:

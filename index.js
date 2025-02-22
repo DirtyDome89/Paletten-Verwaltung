@@ -10,11 +10,10 @@ app.use(express.json()); // Middleware für JSON-Daten
 
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect('mongodb://mongodb:27017/palettenDB', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('MongoDB verbunden'))
-  .catch((err) => console.log(err));
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/deineDB")
+  .then(() => console.log("✅ MongoDB verbunden"))
+  .catch((err) => console.error("❌ MongoDB Fehler:", err));
+
 
 // POST: Neue Palette erstellen
 app.post('/api/palettes', [
